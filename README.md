@@ -20,34 +20,80 @@ For predictive modelling, the data is split into training and test sets. Four di
 
 <h2>Program walk-through:</h2>
 
-<p align="center">
-Launch the utility: <br/>
-<img src="https://i.imgur.com/xgIUAqn" height="8100" width="100%" alt="Disk Sanitization Steps"/>
+<h3 align="center">Data Manipulation:</h3>
+<p align="center">- Data Manipulation including converting categorical data into numerical data, mapping them and saving the map as a vector for direct analyses</p>
+
 <br />
+
+<h3 align="center">Below is a series of visualisation data to represent the given motor insurance claims dataset:</h3>
+
+<p align="center">Histogram Plot:</p>
+<p align="center"><img src="https://i.imgur.com/xgIUAqn.png" height="80%" width="80%" alt="Histogram"/></p>
+
 <br />
-Select the disk:  <br/>
-<img src="https://i.imgur.com/tcTyMUE.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
+<p align="center">Annual Mileage by Age Boxplot:</p>
+<p align="center"><img src="https://imgur.com/XhdJC3l.png" height="80%" width="80%" alt="Boxplot"/></p>
+
 <br />
+
+<p align="center">Vehicle Type Bar Chart:</p>
+<p align="center"><img src="https://imgur.com/3VqsiRK.png" height="80%" width="80%" alt="Bar Chart 1"/></p>
+
 <br />
-Enter the number of passes: <br/>
-<img src="https://i.imgur.com/nCIbXbg.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
+<p align="center">Race Bar Chart:</p>
+<p align="center"><img src="https://imgur.com/xVvMwgv.png" height="80%" width="80%" alt="Bar Chart 2"/></p>
+
 <br />
+
+<p align="center">Correlation Heatmap:</p>
+<p align="center"><img src="https://imgur.com/JzU7r0N.png" height="80%" width="80%" alt="Correlation Heatmap"/></p>
+
 <br />
-Confirm your selection:  <br/>
-<img src="https://i.imgur.com/cdFHBiU.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
+<p align="center">Violin Density Plot:</p>
+<p align="center"><img src="https://imgur.com/c0ZH9JT.png" height="80%" width="80%" alt="Violin Density Plot"/></p>
+
 <br />
+
+<p align="center">Ggpairs Plot:</p>
+<p align="center"><img src="https://imgur.com/GtcjQGu.png" height="80%" width="80%" alt="ggpairs plot"/></p>
+
 <br />
-Wait for process to complete (may take some time):  <br/>
-<img src="https://i.imgur.com/JL945Ga.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
+<p align="center">Density Plot of Income X Annual Mileage:</p>
+<p align="center"><img src="https://imgur.com/WtUs5SM.png" height="80%" width="80%" alt="Density Plot"/></p>
+
 <br />
+
+<h3 align="center">The 4 models selected have the following outcomes:</h3>
+
+<p align="center">Generalized Linear Model (GLM):</p>
+<p align="center"><img src="https://imgur.com/7MVAmH6.png" height="80%" width="80%" alt="GLM"/></p>
+
 <br />
-Sanitization complete:  <br/>
-<img src="https://i.imgur.com/K71yaM2.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
+<p align="center">Random Forest Model:</p>
+<p align="center"><img src="https://imgur.com/tbBqKkZ.png" height="35%" width="35%" alt="RFM"/></p>
+
 <br />
+
+<p align="center">Generalized Additive Model (GAM):</p>
+<p align="center"><img src="https://imgur.com/qsMnF5B.png" height="80%" width="80%" alt="GAM"/></p>
+
 <br />
-Observe the wiped disk:  <br/>
-<img src="https://i.imgur.com/AeZkvFQ.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
-</p>
+
+<p align="center">Gradient Boosting Model (GBM):</p>
+<p align="center"><img src="https://imgur.com/NhmCHJG.png" height="80%" width="80%" alt="GBM"/></p>
+
+<br />
+
+<p align="center">Model Comparison:</p>
+<p align="center"><img src="https://imgur.com/Ihktgu6.png" height="50%" width="50%" alt="Comparison"/></p>
+
+<h2>Conclusion</h2>
+The GBM model is the best performer with the highest accuracy, indicating its effectiveness in handling the data’s complexity. Both GAM and GLM models perform well, with accuracies slightly lower than GBM but still high, suggesting they are also reasonable choices for this task. The Random Forest model’s extremely low accuracy suggests a significant issue that needs to be investigated and addressed. Re-examining the data pre-processing steps, model configuration, or even data quality might be necessary to resolve this. Overall, focusing on improving the Random Forest implementation and further validating the GBM model would be beneficial for achieving robust and reliable predictions.
 
 <!--
  ```diff
