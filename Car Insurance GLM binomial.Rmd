@@ -1,0 +1,279 @@
+---
+title: "   Car Insurance Prediction"
+output: html_document
+date: "2024-07-16"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# If not already installed
+#install.packages("ggplot2")
+#install.packages("randomForest")
+#install.packages("caTools")
+#install.packages("mgcv")
+#install.packages("gbm")
+```
+
+## Comprehensive Data Analysis and Predictive Modelling for Car Insurance Claims: A Comparative Study
+
+The code performs a thorough data analysis and modelling workflow for a car insurance claims dataset. It begins by importing the dataset and cleaning it to remove any rows with missing values. The data is then prepared for analysis by converting specific categorical variables into factors, making them suitable for modelling.
+
+The code subsequently generates several visualisations to explore the data. These include a histogram to understand the distribution of annual mileage, a boxplot to compare annual mileage across different age groups, and bar charts to display the frequency of various vehicle types and racial categories. A correlation heatmap is created to show the relationships between numerical variables, highlighting strong correlations. Additional plots, such as a violin plot and density plot, further illustrate the distribution and density of annual mileage across different age and income groups. The ggpairs function provides a multi-dimensional view of the relationships between credit score, annual mileage, and age.
+
+For predictive modelling, the data is split into training and test sets. Four different models are then built and evaluated: a Generalised Linear Model (GLM), a Random Forest model, a Generalised Additive Model (GAM), and a Gradient Boosting Machine (GBM). Each model's performance is assessed based on accuracy, and confusion matrices are used to summarise the predictions versus actual outcomes.
+
+```{r Data Manipulation, message=FALSE, warning=FALSE, include=FALSE}
+library(readr)
+Car_Insurance_Claim <- read_csv("Car_Insurance_Claim.csv")
+Car_Insurance_Claim <- na.omit(Car_Insurance_Claim)
+summary(Car_Insurance_Claim)
+
+
+
+
+# Specify the categorical columns (adjust column names as needed)
+categorical_columns <- c("AGE","GENDER","RACE","INCOME","DRIVING_EXPERIENCE","EDUCATION","VEHICLE_YEAR","VEHICLE_TYPE")  # Adjust column names as needed
+
+# Create mapping for categorical data
+mapping <- lapply(Car_Insurance_Claim[categorical_columns], function(x) {
+  levels <- unique(x)
+  numeric_values <- as.numeric(factor(levels))
+  names(numeric_values) <- levels
+  numeric_values
+})
+# Print the mapping for reference
+print(mapping)
+
+# Convert categorical variables to factors using the mapping
+for (col in categorical_columns) {
+  # Create a factor with levels in the order of the mapping
+  Car_Insurance_Claim[[col]] <- factor(Car_Insurance_Claim[[col]], levels = names(mapping[[col]]))
+}
+
+
+
+```
+# Histogram distribution plot 
+```{r Histogram Plot, echo=FALSE}
+library(ggplot2)
+# Annual Mileage Histogram
+ggplot(Car_Insurance_Claim, aes(x = ANNUAL_MILEAGE)) +
+  geom_histogram(binwidth = 1000, fill = "skyblue", color = "black") +
+  labs(title = "Annual Mileage Distribution", x = "Annual Mileage", y = "Frequency") +
+  theme_minimal()
+```
+
+
+<p> This plot is very much distributed normally with the majority frequency of the annual milage falling around the mean. </p>
+
+# Annual Mileage by Age Boxplot
+```{r Boxplot, echo=FALSE}
+library(ggplot2)
+#  Compare distributions across different categories, e.g., AGE vs. OUTCOME. Detect outliers and visualise median and quartiles.
+ggplot(Car_Insurance_Claim, aes(x = AGE, y = ANNUAL_MILEAGE)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(title = "Annual Mileage by Age", x = "Age", y = "Annual Mileage")
+```
+<p> This boxplot represents the plots of different ages in comparison the their annual car mileage. The highest averaged mileage comes from ages 16-25. This should be a significant variable and apparent when considering the pricing insurance premiums. </p>
+
+# Vehicle Type and Race Bar Chart
+```{r Bar Chart, echo=FALSE}
+ library(ggplot2)
+# Visualize categorical variables such as VEHICLE_TYPE or RACE.
+ggplot(Car_Insurance_Claim, aes(x = VEHICLE_TYPE)) +
+  geom_bar(fill = "coral") +
+  labs(title = "Count of Vehicle Types", x = "Vehicle Type", y = "Count")
+ggplot(Car_Insurance_Claim, aes(x = RACE)) +
+  geom_bar(fill = "coral") +
+  labs(title = "Count of Race Types  ", x = "Race", y = "Count")
+```
+<p> Just a generic bar chart visualising the different vehicle types along with the two races being 'minority' and 'majority' </p>
+
+# Correlation Heatmap
+```{r Correlation Map, echo=FALSE}
+ library(ggplot2)
+ library(reshape2)
+# Show correlation between numerical variables and Identify strong positive or negative correlations that might affect pricing
+numeric_vars <- Car_Insurance_Claim[, sapply(Car_Insurance_Claim, is.numeric)]
+# use = "complete.obs" only includes rows without missing data. Default uses pearsons correlation
+cor_matrix <- cor(numeric_vars, use = "complete.obs") 
+melted_cor <- melt(cor_matrix)
+ggplot(melted_cor, aes(Var1, Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "white", high = "red", midpoint = 0) +
+  labs(title = "Linear Correlation Heatmap", x = "Variable", y = "Variable") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+<p>This correlation heatmap shows the strength of relationships between the different variables with past accidents and sppeding violations showing the strongest relationship, represented by a darker shade of red. Also a not that annual mileage and post code also have a stong relationship with our outcome variable. Uses the Pearson correlation method to measure correlation (Note on measures linear relationship between variables) </p>
+
+# Violin Density Plot 
+```{r Violin Plot, echo=FALSE, warning=FALSE}
+# violin density plot of age against mileage
+ggplot(Car_Insurance_Claim, aes(x = AGE, y = ANNUAL_MILEAGE)) +
+  geom_violin(fill = "purple") +
+  labs(title = "Distribution of Annual Mileage by Age", x = "Age", y = "Annual Mileage")
+```  
+<p>The violin plot shows the distribution, central tendency, and variability of annual mileage across different age groups, highlighting how mileage patterns change with age and indicating areas of higher density and variability within each group. </p>
+
+Multi-plot 
+```{r Matrix Plot, echo=FALSE, warning=FALSE}
+# multi paired plot 
+# install.packages("GGally")
+library(GGally)
+ggpairs(Car_Insurance_Claim, columns = c("CREDIT_SCORE", "ANNUAL_MILEAGE", "AGE"))
+```
+<p>The ggpairs plot provides a comprehensive overview of the relationships, distributions, and correlations between credit score, annual mileage, and age in the car insurance claim data. </p>
+
+# Density Plot of Income X Annual Mileage
+```{r Multiple Density, echo=FALSE, warning=FALSE}
+ library(ggplot2)
+# Density plot of income against annual mileage
+ggplot(Car_Insurance_Claim, aes(x = ANNUAL_MILEAGE, fill = INCOME)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Density Plot of Annual Mileage by income", x = "Annual Mileage", y = "Density")
+
+```
+<p>he density plot illustrates the distribution of annual mileage for different income groups, showing areas of higher density and highlighting how mileage patterns vary across income levels. </p>
+
+
+```{r GLM Model, echo=FALSE, message=FALSE, warning=FALSE}
+# Splitting data for training and testing
+
+
+# Load libraries
+library(caTools)
+library(randomForest)
+library(mgcv)
+library(gbm)
+
+set.seed(123) # set seed to 123
+split = sample.split(Car_Insurance_Claim$OUTCOME, SplitRatio = 0.8) # split data 80/20
+
+training_set = subset(Car_Insurance_Claim, split == TRUE) # split 80% training data
+test_set = subset(Car_Insurance_Claim, split == FALSE) # split 20% test data
+
+# full GLM model with family included
+GLM <- glm(OUTCOME~ AGE + GENDER + RACE + DRIVING_EXPERIENCE + EDUCATION + INCOME + CREDIT_SCORE + VEHICLE_OWNERSHIP + VEHICLE_YEAR + MARRIED + CHILDREN + POSTAL_CODE +  ANNUAL_MILEAGE + VEHICLE_TYPE + SPEEDING_VIOLATIONS + DUIS + PAST_ACCIDENTS, family = binomial, training_set , method = "glm.fit")
+summary(GLM)
+
+library(MASS)
+stepwise_model <- stepAIC(GLM, direction = "both")
+summary(stepwise_model)
+
+# Predict outcomes on the test set using the stepwise model
+predictions <- predict(stepwise_model, newdata = test_set, type = "response")
+
+# Convert probabilities to binary outcomes
+predicted_classes <- ifelse(predictions > 0.5, 1, 0)
+
+# Evaluate model performance
+# Confusion Matrix
+confusion_matrix <- table(test_set$OUTCOME, predicted_classes)
+print(confusion_matrix)
+
+# Calculate Accuracy
+accuracy_glm <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
+cat("GLM Accuracy:", round(accuracy_glm, 4), "\n")
+
+
+```
+
+
+# Random Forest Model
+```{r RF Model, echo=FALSE, warning=FALSE}
+set.seed(123) # for reproducibility
+rf_model <- randomForest(OUTCOME ~  GENDER + DRIVING_EXPERIENCE + VEHICLE_OWNERSHIP + VEHICLE_YEAR + MARRIED + CHILDREN + POSTAL_CODE +  ANNUAL_MILEAGE + SPEEDING_VIOLATIONS + PAST_ACCIDENTS, data = training_set, ntree = 100) 
+predictions_rf <- predict(rf_model, newdata = test_set)
+confusion_matrix_rf <- table(test_set$OUTCOME, predictions_rf)
+accuracy_rf <- sum(diag(confusion_matrix_rf)) / sum(confusion_matrix_rf)
+cat("RF Accuracy:", round(accuracy_rf, 4), "\n")
+```
+# GAM
+```{r GAM Model, echo=FALSE}
+
+
+GAM <- gam(OUTCOME ~ AGE + GENDER + DRIVING_EXPERIENCE + EDUCATION + INCOME + CREDIT_SCORE + VEHICLE_OWNERSHIP + VEHICLE_YEAR + MARRIED + CHILDREN + POSTAL_CODE + ANNUAL_MILEAGE + VEHICLE_TYPE + SPEEDING_VIOLATIONS + DUIS + PAST_ACCIDENTS, family = binomial, data = training_set)
+summary(GAM)
+
+
+# Predict outcomes on the test set
+predictions_gam <- predict(GAM, newdata = test_set, type = "response")
+
+# Convert probabilities to binary outcomes
+predicted_classes_gam <- ifelse(predictions_gam > 0.5, 1, 0)
+
+# Confusion Matrix
+confusion_matrix_gam <- table(test_set$OUTCOME, predicted_classes_gam)
+print(confusion_matrix_gam)
+
+# Calculate Accuracy
+accuracy_gam <- sum(diag(confusion_matrix_gam)) / sum(confusion_matrix_gam)
+cat("GAM Accuracy:", round(accuracy_gam, 4), "\n")
+
+```
+# GBM
+```{r GBM Model, echo=FALSE}
+# Fit the GBM model
+GBM <- gbm(
+  OUTCOME ~ AGE + GENDER + RACE + DRIVING_EXPERIENCE + EDUCATION + INCOME + CREDIT_SCORE +
+    VEHICLE_OWNERSHIP + VEHICLE_YEAR + MARRIED + CHILDREN + POSTAL_CODE + ANNUAL_MILEAGE +
+    VEHICLE_TYPE + SPEEDING_VIOLATIONS + DUIS + PAST_ACCIDENTS,
+  data = training_set,
+  distribution = "bernoulli", # Use "bernoulli" for binary classification
+  n.trees = 400, # Number of trees
+  interaction.depth = 6, # Depth of trees
+  shrinkage = 0.01, # Learning rate
+  cv.folds = 5, # Number of cross-validation folds
+  n.minobsinnode = 10 # Minimum number of observations in terminal nodes
+)
+
+# Print a summary of the model without plotting
+summary_gbm <- summary(GBM, plotit = FALSE)
+print(summary_gbm)
+
+# Predict on the test set
+predictions_gbm <- predict(GBM, newdata = test_set, n.trees = GBM$n.trees, type = "response")
+
+# Convert probabilities to binary outcomes
+predicted_classes_gbm <- ifelse(predictions_gbm > 0.5, 1, 0)
+
+# Create a confusion matrix
+confusion_matrix_gbm <- table(test_set$OUTCOME, predicted_classes_gbm)
+print(confusion_matrix_gbm)
+
+# Calculate accuracy
+accuracy_gbm <- sum(diag(confusion_matrix_gbm)) / sum(confusion_matrix_gbm)
+cat("GBM Accuracy:", round(accuracy_gbm, 4), "\n")
+
+
+```
+
+# Comparison of Different Models
+```{r Comaparison, echo=FALSE}
+cat("Model Comparison:\n")
+cat("GLM Accuracy: ", round(accuracy_glm, 4), "\n")
+cat("Random Forest Accuracy: ", round(accuracy_rf, 4), "\n")
+cat("GAM Accuracy: ", round(accuracy_gam, 4), "\n")
+cat("GBM Accuracy: ", round(accuracy_gbm, 4), "\n")
+
+# Store accuracies in a vector
+accuracies <- c(GLM = accuracy_glm, 
+                Random_Forest = accuracy_rf,
+                GAM = accuracy_gam,
+                GBM = accuracy_gbm)
+
+# Identify the model with the highest accuracy
+best_model_name <- names(which.max(accuracies))
+best_model_accuracy <- max(accuracies)
+
+
+cat(" Best Model is:", best_model_name,"\n",
+    "Best Model Accuracy:", round(best_model_accuracy, 4), "\n")
+
+```
+<p>Conclusion:
+The GBM model is the best performer with the highest accuracy, indicating its effectiveness in handling the data's complexity.
+Both GAM and GLM models perform well, with accuracies slightly lower than GBM but still high, suggesting they are also reasonable choices for this task.
+The Random Forest model's extremely low accuracy suggests a significant issue that needs to be investigated and addressed. Re-examining the data pre-processing steps, model configuration, or even data quality might be necessary to resolve this.
+Overall, focusing on improving the Random Forest implementation and further validating the GBM model would be beneficial for achieving robust and reliable predictions. </p>
